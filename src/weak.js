@@ -81,3 +81,13 @@ function h$finalizeWeak(w) {
 }
 
 
+function h$FastWeak(ticket) {
+  this.ticket = ticket;
+  this.m = 0;
+}
+
+function h$FastWeakTicket(val) {
+  this.val = val;
+  this.weak = new h$FastWeak(this);
+  this.m = 0;
+}

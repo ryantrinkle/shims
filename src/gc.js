@@ -435,6 +435,19 @@ function h$follow(obj, sp) {
                     TRACE_GC("adding static marks");
                     for(var i=0;i<s.length;i++) ADDW(s[i]);
                 }
+            } else if(c instanceof h$FastWeak) {
+              MARK_OBJ(c);
+              if(!IS_MARKED(c.ticket)) {
+                c.ticket = null; // If the ticket isn't reachable, this will let it get cleaned up by the JS gc
+              }
+            } else if(c instanceof h$FastWeakTicket) {
+              var weak = c.weak;
+              MARK_OBJ(c);
+              ADDW(c.val);
+              if(IS_MARKED(weak)) {
+                // In this case, the weak side has been marked first, which means it's been cleared; restore it
+                weak.ticket = c;
+              }
             } else if(c instanceof h$Weak) {
                 MARK_OBJ(c);
             } else if(c instanceof h$MVar) {
