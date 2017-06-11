@@ -437,7 +437,7 @@ function h$follow(obj, sp) {
                 }
             } else if(c instanceof h$FastWeak) {
               MARK_OBJ(c);
-              if(!IS_MARKED(c.ticket)) {
+              if(c.ticket !== null && !IS_MARKED(c.ticket)) {
                 c.ticket = null; // If the ticket isn't reachable, this will let it get cleaned up by the JS gc
               }
             } else if(c instanceof h$FastWeakTicket) {
