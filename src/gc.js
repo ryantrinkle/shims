@@ -441,12 +441,13 @@ function h$follow(obj, sp) {
                 c.ticket = null; // If the ticket isn't reachable, this will let it get cleaned up by the JS gc
               }
             } else if(c instanceof h$FastWeakTicket) {
-              var weak = c.weak;
               MARK_OBJ(c);
-              ADDW(c.val);
-              if(IS_MARKED(weak)) {
+              if(!IS_MARKED(c.val)) {
+                ADDW(c.val);
+              }
+              if(IS_MARKED(c.weak)) {
                 // In this case, the weak side has been marked first, which means it's been cleared; restore it
-                weak.ticket = c;
+                c.weak.ticket = c;
               }
             } else if(c instanceof h$Weak) {
                 MARK_OBJ(c);
