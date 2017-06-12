@@ -91,3 +91,16 @@ function h$FastWeakTicket(val) {
   this.weak = new h$FastWeak(this);
   this.m = 0;
 }
+
+function h$FastWeakBag() {
+  this.tickets = [];
+  this.m = 0;
+}
+
+function h$FastWeakBagTicket(bag, val) {
+  this.val = val;
+  this.bag = bag;
+  this.pos = bag.tickets.length;
+  bag.tickets.push(this);
+  this.m = 0;
+};
