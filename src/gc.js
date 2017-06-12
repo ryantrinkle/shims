@@ -438,7 +438,7 @@ function h$follow(obj, sp) {
             } else if(c instanceof h$FastWeak) {
               MARK_OBJ(c);
               if(c.ticket !== null && !IS_MARKED(c.ticket)) {
-                c.ticket = null; // If the ticket isn't reachable, this will let it get cleaned up by the JS gc
+                c.ticket = null; // If the ticket isn't reachable, this will let it get cleaned up by the JS gc; if it is reachable, it'll fill this back in
               }
             } else if(c instanceof h$FastWeakTicket) {
               MARK_OBJ(c);
@@ -448,6 +448,35 @@ function h$follow(obj, sp) {
               if(IS_MARKED(c.weak)) {
                 // In this case, the weak side has been marked first, which means it's been cleared; restore it
                 c.weak.ticket = c;
+              }
+            } else if(c instanceof h$FastWeakBag) {
+              MARK_OBJ(c);
+              var j = 0; // j should always be equal to the number of not-yet-necessarily-dead tickets that have been traversed; this should always be less than or equal to i
+              for(i = 0; i < c.tickets.length; i++) {
+                // Any nulls left in the array prior to checking on the tickets must be tickets that died in the last GC, so we ignore them
+                if(c.tickets[i] !== null) {
+                  if(j !== i) {
+                    c.tickets[i].pos = j;
+                  }
+                  if(!IS_MARKED(c.tickets[i])) {
+                    // If the ticket isn't reachable, this will let it get cleaned up by the JS gc; if it is reachable, it'll fill this back in
+                    c.tickets[j] = null;
+                  } else if(j !== i) {
+                    // We need to move the item
+                    c.tickets[j] = c.tickets[i];
+                  } // If it's marked and not moving, don't do anything
+                  j++;
+                }
+              }
+              c.tickets.length = j; // Shrink the array if any nulls have been dropped
+            } else if(c instanceof h$FastWeakBagTicket) {
+              MARK_OBJ(c);
+              if(!IS_MARKED(c.val)) {
+                ADDW(c.val);
+              }
+              if(IS_MARKED(c.bag)) {
+                // In this case, the weak side has been marked first, which means it's been cleared; restore it
+                c.bag.tickets[c.pos] = c;
               }
             } else if(c instanceof h$Weak) {
                 MARK_OBJ(c);
